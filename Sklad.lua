@@ -1,43 +1,55 @@
-local bridge = peripheral.find("meBridge")
+local mon = peripheral.find("monitor")
+local meBridge = peripheral.find("meBridge")
 
-if not bridge then
-    print("ERROR: ME Bridge not found!")
+if not mon or not meBridge then
+    print("Monitor or ME Bridge not found!")
     return
 end
 
-print("SUCCESS: ME Bridge found!")
-
--- List ALL available methods
-print("All available methods:")
-local methods = peripheral.getMethods("meBridge")
-for i, method in ipairs(methods) do
-    print("  " .. i .. ": " .. method)
+if not meBridge.isConnected() then
+    print("ME Bridge not connected to AE2!")
+    return
 end
 
--- Test if system is connected
-print("\nTesting connection...")
-local isConnected = bridge.isConnected()
-print("Is connected to AE2: " .. tostring(isConnected))
+mon.setTextScale(0.5)
+mon.clear()
 
--- Try to get stored items with correct method name
-print("\nTrying to list items...")
+while true do
+    mon.setCursorPos(1, 1)
+    mon.write("=== Storage Report ===")
 
--- Check which item methods exist
-if bridge.listItems then
-    local items = bridge.listItems()
-    print("listItems found " .. #items .. " items")
-elseif bridge.getStoredItems then
-    local items = bridge.getStoredItems()
-    print("getStoredItems found " .. #items .. " items")
-else
-    print("No known item methods found")
-end
+    local importantItems = {
+        "minecraft:iron_ingot",
+        "minecraft:gold_ingot",
+        "minecraft:diamond",
+        "mekanism:osmium_ingot"
+    }
 
--- Test getting specific item
-print("\nTesting item search...")
-if bridge.getItem then
-    local iron = bridge.getItem("minecraft:iron_ingot")
-    print("getItem result type: " .. type(iron))
-else
-    print("getItem method not available")
+    local yPos = 3
+    for i, itemName in ipairs(importantItems) do
+        -- Правильное использование getItem
+        local items = meBridge.getItem(itemName)
+        local count = 0
+        
+        if items then
+            for _, item in ipairs(items) do
+                count = count + item.amount
+            end
+        end
+        
+        -- Форматирование имени
+        local displayName = string.gsub(itemName, "minecraft:", "")
+        displayName = string.gsub(displayName, "mekanism:", "")
+        displayName = string.gsub(displayName, "_", " ")
+        
+        mon.setCursorPos(2, yPos)
+        mon.write(displayName .. ": " .. count)
+        yPos = yPos + 1
+    end
+
+    local allItems = meBridge.listItems()
+    mon.setCursorPos(2, yPos + 1)
+    mon.write("Total types: " .. #allItems)
+    
+    os.sleep(5)
 end
