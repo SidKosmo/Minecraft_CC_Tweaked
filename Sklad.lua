@@ -19,16 +19,16 @@ while true do
     mon.write("=== Storage Report ===")
 
     local importantItems = {
-        "minecraft:iron_ingot",
-        "minecraft:gold_ingot",
-        "minecraft:diamond",
-        "mekanism:osmium_ingot"
+        {name = "minecraft:iron_ingot"},
+        {name = "minecraft:gold_ingot"},
+        {name = "minecraft:diamond"},
+        {name = "mekanism:osmium_ingot"}
     }
 
     local yPos = 3
-    for i, itemName in ipairs(importantItems) do
-        -- Правильное использование getItem
-        local items = meBridge.getItem(itemName)
+    for i, itemQuery in ipairs(importantItems) do
+        -- ПРАВИЛЬНО: передаем таблицу, а не строку
+        local items = meBridge.getItem(itemQuery)
         local count = 0
         
         if items then
@@ -38,7 +38,7 @@ while true do
         end
         
         -- Форматирование имени
-        local displayName = string.gsub(itemName, "minecraft:", "")
+        local displayName = string.gsub(itemQuery.name, "minecraft:", "")
         displayName = string.gsub(displayName, "mekanism:", "")
         displayName = string.gsub(displayName, "_", " ")
         
