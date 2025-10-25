@@ -1,54 +1,59 @@
-local mon = peripheral.find("monitor")
 local meBridge = peripheral.find("meBridge")
 
-if not mon or not meBridge then
-    print("Mon or Bridge bad!")
+if not meBridge then
+    print("ERROR: ME Bridge not found!")
+    print("Check:")
+    print("1. ME Bridge block placed")
+    print("2. Connected to AE2 network") 
+    print("3. Computer connected to bridge")
     return
 end
 
-mon.setTextScale(0.5)
-mon.clear()
+print("SUCCESS: ME Bridge found!")
+print("Testing methods...")
 
-while true do
-    mon.setCursorPos(1, 1)
-    mon.write("=== Sklad report ===")
+-- Проверяем какие методы доступны у ME Bridge
+local methods = peripheral.getMethods("meBridge")
+print("Available methods:")
+for i, method in ipairs(methods) do
+    print("  " .. i .. ": " .. method)
+end
 
-    local importantItems = {
-        "minecraft:iron_ingot",
-        "minecraft:gold_ingot", 
-        "minecraft:diamond",
-        "mekanism:osmium_ingot"
-    }
-
-    local yPos = 3
-    for i, itemName in ipairs(importantItems) do
-        -- getItem возвращает ТАБЛИЦУ, даже если предмет один
-        local items = meBridge.getItem(itemName)
-        local count = 0
-        
-        if items then
-            -- Суммируем количество из всех найденных вариантов предмета
-            for _, item in ipairs(items) do
-                count = count + (item.amount or 0)
-            end
-        end
-        
-        -- Красивое отображение имени (убираем namespace)
-        local displayName = string.gsub(itemName, "minecraft:", "")
-        displayName = string.gsub(displayName, "mekanism:", "")
-        displayName = string.gsub(displayName, "ingot", "") -- Убираем "ingot"
-        displayName = string.gsub(displayName, "_", " ") -- Заменяем _ на пробелы
-        displayName = string.upper(string.sub(displayName, 1, 1)) .. string.sub(displayName, 2) -- Первая буква заглавная
-        
-        mon.setCursorPos(2, yPos)
-        mon.write(displayName .. ": " .. count)
-        yPos = yPos + 1
-    end
-
-    -- Добавляем общее количество типов предметов в системе
-    local allItems = meBridge.getItems() or {}
-    mon.setCursorPos(2, yPos + 1)
-    mon.write("Total items: " .. #allItems)
+-- Пробуем получить все предметы из системы
+print("\nTesting getItems()...")
+local allItems = meBridge.getItems()
+if allItems then
+    print("SUCCESS: getItems() works!")
+    print("Total items in system: " .. #allItems)
     
-    os.sleep(5)
+    if #allItems > 0 then
+        print("First 3 items:")
+        for i = 1, math.min(3, #allItems) do
+            local item = allItems[i]
+            print("  " .. item.name .. " - " .. item.amount .. "x")
+        end
+    end
+else
+    print("ERROR: getItems() failed!")
+end
+
+-- Тестируем поиск конкретного предмета
+print("\nTesting getItem()...")
+local testItem = "minecraft:iron_ingot"
+local result = meBridge.getItem(testItem)
+
+print("Result of getItem('" .. testItem .. "'):")
+print("Type: " .. type(result))
+
+if type(result) == "table" then
+    print("Table size: " .. #result)
+    if #result > 0 then
+        for i, item in ipairs(result) do
+            print("  Variant " .. i .. ": " .. item.amount .. "x")
+        end
+    else
+        print("  Empty table - item not found")
+    end
+else
+    print("  Result: " .. tostring(result))
 end
