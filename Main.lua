@@ -1,40 +1,45 @@
--- Тест подключения с проверкой методов
 local left = peripheral.wrap("left")
 local right = peripheral.wrap("right")
 
-print("=== Peripheral Check ===")
-print("Left side: " .. (left and peripheral.getName(left) or "NOT FOUND"))
-print("Right side: " .. (right and peripheral.getName(right) or "NOT FOUND"))
+if not left or not right then
+    print("Chests not found!")
+    return
+end
 
--- Проверяем какие методы доступны у левого сундука
-if left then
-    print("\nLeft chest methods:")
-    local methods = peripheral.getMethods("left")
-    for i, method in ipairs(methods) do
-        print("  " .. method)
-    end
+print("Left chest: " .. peripheral.getName(left))
+print("Right chest: " .. peripheral.getName(right))
+
+-- Проверяем методы которые точно должны работать
+function testMethods()
+    print("\nTesting left chest methods:")
     
-    -- Пробуем получить список предметов
-    print("\nTrying to list items...")
-    local items = left.list()
-    if items then
+    -- Проверяем list()
+    local success, items = pcall(function() return left.list() end)
+    if success and items then
+        print("list() - WORKS")
         local itemCount = 0
         for slot, item in pairs(items) do
             if item then
                 itemCount = itemCount + 1
-                print("Slot " .. slot .. ": " .. item.name .. " x" .. item.count)
+                print("  Slot " .. slot .. ": " .. item.name .. " x" .. item.count)
             end
         end
-        print("Total items in left chest: " .. itemCount)
+        print("Total items: " .. itemCount)
     else
-        print("Cannot list items from left chest")
+        print("list() - FAILED")
+    end
+    
+    -- Проверяем pushItems()
+    print("\nTesting pushItems...")
+    local fromName = peripheral.getName(left)
+    success, result = pcall(function() 
+        return right.pushItems(fromName, 1, 1)
+    end)
+    if success then
+        print("pushItems - WORKS, moved: " .. (result or 0))
+    else
+        print("pushItems - FAILED")
     end
 end
 
-if right then
-    print("\nRight chest methods:")
-    local methods = peripheral.getMethods("right")
-    for i, method in ipairs(methods) do
-        print("  " .. method)
-    end
-end
+testMethods()

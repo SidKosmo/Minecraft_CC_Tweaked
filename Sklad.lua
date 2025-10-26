@@ -1,23 +1,33 @@
--- Простой тест
 local left = peripheral.wrap("left")
 local right = peripheral.wrap("right")
 
-print("Connected peripherals:")
-local peripherals = peripheral.getNames()
-for i, name in ipairs(peripherals) do
-    print("  " .. name)
+if not left or not right then
+    print("Chests not connected!")
+    return
 end
 
-if left then
-    print("\nLeft chest items:")
-    local success, items = pcall(function() return left.list() end)
-    if success and items then
+function continuousTransfer()
+    while true do
+        local moved = 0
+        local fromName = peripheral.getName(left)
+        local items = left.list()
+        
         for slot, item in pairs(items) do
             if item then
-                print("  " .. item.name .. " x" .. item.count)
+                local movedCount = right.pushItems(fromName, slot, item.count)
+                if movedCount > 0 then
+                    print("[" .. os.time() .. "] Moved " .. movedCount .. " " .. item.name)
+                    moved = moved + movedCount
+                end
             end
         end
-    else
-        print("  Cannot access left chest")
+        
+        if moved == 0 then
+            print("[" .. os.time() .. "] No items to transfer")
+        end
+        
+        os.sleep(5) -- Проверяем каждые 5 секунд
     end
 end
+
+continuousTransfer()
