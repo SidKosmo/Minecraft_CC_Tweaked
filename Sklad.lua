@@ -6,42 +6,32 @@ if not left or not right then
     return
 end
 
-local leftName = peripheral.getName(left)
-local rightName = peripheral.getName(right)
-
-print("Left: " .. leftName)
-print("Right: " .. rightName)
-
--- Пробуем разные варианты вызова методов
-function tryMethods()
-    -- Вариант 1: Прямой вызов через peripheral.call
-    print("\nTrying peripheral.call:")
-    local success, items = pcall(function() 
-        return peripheral.call(leftName, "list") 
-    end)
+function transferWithPull()
+    local totalMoved = 0
+    local fromName = peripheral.getName(left)
     
-    if success and items then
-        print("SUCCESS! Found items:")
-        for slot, item in pairs(items) do
-            print("  " .. item.name .. " x" .. item.count)
-        end
-        return items
-    end
+    local items = left.list()
+    print("Found " .. getTableSize(items) .. " item stacks:")
     
-    -- Вариант 2: Пробуем другие возможные методы
-    local methodNames = {"getAllStacks", "getStackInSlot", "getAllItems", "getItems"}
-    for i, method in ipairs(methodNames) do
-        local success, result = pcall(function() 
-            return peripheral.call(leftName, method) 
-        end)
-        if success and result then
-            print("Method " .. method .. " works!")
-            return result
+    for slot, item in pairs(items) do
+        if item then
+            print("Trying to pull " .. item.name + " from slot " .. slot)
+            -- Правый сундук тянет предметы из левого
+            local movedCount = right.pullItems(fromName, slot, item.count)
+            print("Pulled: " .. movedCount .. " " .. item.name)
+            totalMoved = totalMoved + movedCount
         end
     end
     
-    print("No standard inventory methods work with Quark chests")
-    return nil
+    return totalMoved
 end
 
-local items = tryMethods()
+function getTableSize(t)
+    local count = 0
+    for k, v in pairs(t) do count = count + 1 end
+    return count
+end
+
+print("Starting PULL transfer...")
+local result = transferWithPull()
+print("Pull transfer completed! Moved " .. result + " items")
