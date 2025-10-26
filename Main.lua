@@ -1,40 +1,40 @@
-local chestFrom = peripheral.wrap("left")   -- quark:variant_chest_1
-local chestTo = peripheral.wrap("right")    -- quark:variant_chest_3
+-- Тест подключения с проверкой методов
+local left = peripheral.wrap("left")
+local right = peripheral.wrap("right")
 
-if not chestFrom then
-    print("Left chest (quark:variant_chest_1) not found!")
-end
+print("=== Peripheral Check ===")
+print("Left side: " .. (left and peripheral.getName(left) or "NOT FOUND"))
+print("Right side: " .. (right and peripheral.getName(right) or "NOT FOUND"))
 
-if not chestTo then
-    print("Right chest (quark:variant_chest_3) not found!")
-end
-
-if not chestFrom or not chestTo then
-    return
-end
-
-print("Left chest: " .. peripheral.getName(chestFrom))
-print("Right chest: " .. peripheral.getName(chestTo))
-
-function transferAllItems()
-    local totalMoved = 0
-    local fromName = peripheral.getName(chestFrom)
-    
-    for slot = 1, chestFrom.size() do
-        local item = chestFrom.getItemDetail(slot)
-        if item then
-            -- Переносим предмет из слота в целевой сундук
-            local remaining = chestTo.pushItems(fromName, slot, item.count)
-            local moved = item.count - remaining
-            if moved > 0 then
-                print("Moved " .. moved .. " " .. item.name)
-                totalMoved = totalMoved + moved
-            end
-        end
+-- Проверяем какие методы доступны у левого сундука
+if left then
+    print("\nLeft chest methods:")
+    local methods = peripheral.getMethods("left")
+    for i, method in ipairs(methods) do
+        print("  " .. method)
     end
     
-    return totalMoved
+    -- Пробуем получить список предметов
+    print("\nTrying to list items...")
+    local items = left.list()
+    if items then
+        local itemCount = 0
+        for slot, item in pairs(items) do
+            if item then
+                itemCount = itemCount + 1
+                print("Slot " .. slot .. ": " .. item.name .. " x" .. item.count)
+            end
+        end
+        print("Total items in left chest: " .. itemCount)
+    else
+        print("Cannot list items from left chest")
+    end
 end
 
-local moved = transferAllItems()
-print("Total items moved: " .. moved)
+if right then
+    print("\nRight chest methods:")
+    local methods = peripheral.getMethods("right")
+    for i, method in ipairs(methods) do
+        print("  " .. method)
+    end
+end
