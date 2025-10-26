@@ -1,24 +1,11 @@
+-- Простейшая проверка
 local left = peripheral.wrap("left")
 local right = peripheral.wrap("right")
 
-if not left then
-    print("Left chest not found!")
-else
-    print("Left chest: " .. peripheral.getName(left))
-    print("Available methods:")
-    local methods = peripheral.getMethods("left")
-    for i, method in ipairs(methods) do
-        print("  " .. method)
-    end
-end
+print("Left: " .. (left and "connected" or "disconnected"))
+print("Right: " .. (right and "connected" or "disconnected"))
 
-if not right then
-    print("Right chest not found!")
-else
-    print("Right chest: " .. peripheral.getName(right))
-    print("Available methods:")
-    local methods = peripheral.getMethods("right")
-    for i, method in ipairs(methods) do
-        print("  " .. method)
-    end
+if left and right then
+    print("Both chests connected, but methods not compatible")
+    print("Try using turtle or ME Bridge instead")
 end
