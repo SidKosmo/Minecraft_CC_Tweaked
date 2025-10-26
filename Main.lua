@@ -1,36 +1,40 @@
--- Поставь компьютера между сундуками
--- Подключи модемы к сундукам
+local chestFrom = peripheral.wrap("left")   -- quark:variant_chest_1
+local chestTo = peripheral.wrap("right")    -- quark:variant_chest_3
 
-local chestFrom = peripheral.wrap("left")   -- Левый сундук
-local chestTo = peripheral.wrap("right")    -- Правый сундук
+if not chestFrom then
+    print("Left chest (quark:variant_chest_1) not found!")
+end
+
+if not chestTo then
+    print("Right chest (quark:variant_chest_3) not found!")
+end
 
 if not chestFrom or not chestTo then
-    print("Check chest connections!")
     return
 end
 
-function transferItems()
-    local itemsMoved = 0
+print("Left chest: " .. peripheral.getName(chestFrom))
+print("Right chest: " .. peripheral.getName(chestTo))
+
+function transferAllItems()
+    local totalMoved = 0
+    local fromName = peripheral.getName(chestFrom)
     
-    -- Получаем список предметов в исходном сундуке
-    local items = chestFrom.list()
-    
-    for slot, item in pairs(items) do
+    for slot = 1, chestFrom.size() do
+        local item = chestFrom.getItemDetail(slot)
         if item then
-            -- Переносим предмет из слота в слота
-            local itemStack = chestFrom.getItemDetail(slot)
-            if itemStack then
-                -- Пытаемся добавить в целевой сундук
-                local remaining = chestTo.pushItems(peripheral.getName(chestFrom), slot, itemStack.count)
-                if remaining < itemStack.count then
-                    itemsMoved = itemsMoved + (itemStack.count - remaining)
-                    print("Moved " .. (itemStack.count - remaining) .. " " .. itemStack.name)
-                end
+            -- Переносим предмет из слота в целевой сундук
+            local remaining = chestTo.pushItems(fromName, slot, item.count)
+            local moved = item.count - remaining
+            if moved > 0 then
+                print("Moved " .. moved .. " " .. item.name)
+                totalMoved = totalMoved + moved
             end
         end
     end
     
-    return itemsMoved
+    return totalMoved
 end
 
-print("Total moved: " .. transferItems())
+local moved = transferAllItems()
+print("Total items moved: " .. moved)
