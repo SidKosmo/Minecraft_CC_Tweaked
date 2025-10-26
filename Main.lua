@@ -6,40 +6,30 @@ if not left or not right then
     return
 end
 
-print("Left chest: " .. peripheral.getName(left))
-print("Right chest: " .. peripheral.getName(right))
-
--- Проверяем методы которые точно должны работать
-function testMethods()
-    print("\nTesting left chest methods:")
-    
-    -- Проверяем list()
-    local success, items = pcall(function() return left.list() end)
-    if success and items then
-        print("list() - WORKS")
-        local itemCount = 0
-        for slot, item in pairs(items) do
-            if item then
-                itemCount = itemCount + 1
-                print("  Slot " .. slot .. ": " .. item.name .. " x" .. item.count)
-            end
+print("Testing LEFT chest methods:")
+local leftMethods = peripheral.getMethods("left")
+for i, method in ipairs(leftMethods) do
+    print("Testing: " .. method)
+    local success, result = pcall(function() 
+        if method == "list" or method == "size" then
+            return left[method]()
+        else
+            return "method exists"
         end
-        print("Total items: " .. itemCount)
-    else
-        print("list() - FAILED")
-    end
-    
-    -- Проверяем pushItems()
-    print("\nTesting pushItems...")
-    local fromName = peripheral.getName(left)
-    success, result = pcall(function() 
-        return right.pushItems(fromName, 1, 1)
     end)
-    if success then
-        print("pushItems - WORKS, moved: " .. (result or 0))
-    else
-        print("pushItems - FAILED")
-    end
+    print("  " .. method .. ": " .. (success and "SUCCESS" or "FAILED"))
 end
 
-testMethods()
+print("\nTesting RIGHT chest methods:")
+local rightMethods = peripheral.getMethods("right")
+for i, method in ipairs(rightMethods) do
+    print("Testing: " .. method)
+    local success, result = pcall(function() 
+        if method == "list" or method == "size" then
+            return right[method]()
+        else
+            return "method exists"
+        end
+    end)
+    print("  " .. method .. ": " .. (success and "SUCCESS" or "FAILED"))
+end

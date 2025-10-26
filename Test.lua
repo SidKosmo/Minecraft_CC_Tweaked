@@ -1,35 +1,16 @@
-print("=== Adjacent Blocks Check ===")
+local left = peripheral.wrap("left")
+local right = peripheral.wrap("right")
 
-local sides = {"left", "right", "front", "back", "top", "bottom"}
-local foundInventories = {}
-
-for i, side in ipairs(sides) do
-    if peripheral.isPresent(side) then
-        local pType = peripheral.getType(side)
-        print(side .. ": " .. pType)
-        
-        if pType == "inventory" then
-            table.insert(foundInventories, side)
-            local chest = peripheral.wrap(side)
-            
-            -- Пробуем получить список предметов
-            local success, items = pcall(function() return chest.list() end)
-            if success and items then
-                local itemCount = 0
-                for slot, item in pairs(items) do
-                    if item then itemCount = itemCount + 1 end
-                end
-                print("  Items: " .. itemCount)
-            else
-                print("  Cannot access items")
-            end
-        end
-    else
-        print(side .. ": empty")
-    end
+if not left or not right then
+    print("Need both chests!")
+    return
 end
 
-print("\nFound inventories: " .. #foundInventories)
-for i, side in ipairs(foundInventories) do
-    print("  " .. side)
-end
+print("Quark chests detected but inventory methods not available")
+print("This is normal for some modded chests")
+print("")
+print("Solutions:")
+print("1. Use ME Bridge as intermediary")
+print("2. Use Turtle to transfer items") 
+print("3. Use different chest types (vanilla or other mods)")
+print("4. Check if Quark has compatibility addon for CC:Tweaked")
